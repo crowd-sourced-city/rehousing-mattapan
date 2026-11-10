@@ -25,4 +25,4 @@ currently run on all cleaned parcels; `main.py` exposes this choice as
 nov10 7am notes: `main.py` is not functional, but `/notebooks/og_parcel_encoding.ipynb` works as intended.
 I am in the process of refactoring the code so that it runs a little smoother and we can add more things to it later. But the notebook works fine for now.
 
-For the next team, you can find the tables you need in `/outputs/XXXX.gpkg`
+For the next team, you can find the tables you need in `data/outputs/XXXX.gpkg`
