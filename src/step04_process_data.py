@@ -4,11 +4,27 @@ import pandas as pd
 from shapely.geometry import LineString
 from shapely.ops import nearest_points, unary_union
 
-DEFAULT_STREET_SUFFIXES = {
-    "ST", "STREET", "AVE", "AVENUE", "RD", "ROAD", "DR", "DRIVE",
-    "LN", "LANE", "CT", "COURT", "PL", "PLACE", "TE", "TERRACE",
-    "PKWY", "PARKWAY", "HWY", "HIGHWAY", "SQ", "SQUARE", "CIR", "CIRCLE",
+# Every street-type spelling seen in the parcel and street data, mapped to the
+# form used in the streets layer. Parcel names use the short forms (AV, HW,
+# CI, TE, PK, LA); the streets layer uses AVE, HWY, CIR, TER, PARK, LN.
+STREET_TYPE_ALIASES = {
+    "ST": "ST", "STREET": "ST",
+    "RD": "RD", "ROAD": "RD",
+    "AV": "AVE", "AVE": "AVE", "AVENUE": "AVE",
+    "TE": "TER", "TER": "TER", "TERRACE": "TER",
+    "DR": "DR", "DRIVE": "DR",
+    "HW": "HWY", "HWY": "HWY", "HIGHWAY": "HWY",
+    "CI": "CIR", "CIR": "CIR", "CIRCLE": "CIR",
+    "PK": "PARK", "PARK": "PARK",
+    "LA": "LN", "LN": "LN", "LANE": "LN",
+    "CT": "CT", "COURT": "CT",
+    "PL": "PL", "PLACE": "PL",
+    "PKWY": "PKWY", "PARKWAY": "PKWY",
+    "SQ": "SQ", "SQUARE": "SQ",
+    "BLVD": "BLVD", "BOULEVARD": "BLVD",
+    "WAY": "WAY",
 }
+DIRECTIONS = {"N", "S", "E", "W", "NE", "NW", "SE", "SW"}
 
 def decompose_parcel_edges(
     parcels_gdf: gpd.GeoDataFrame,
@@ -42,29 +58,34 @@ def decompose_parcel_edges(
     )
 
 
-def _street_suffixes(streets_gdf: gpd.GeoDataFrame) -> set[str]:
-    suffixes = set(DEFAULT_STREET_SUFFIXES)
-    if "ST_TYPE" in streets_gdf.columns:
-        suffixes.update(
-            streets_gdf["ST_TYPE"].dropna().astype(str).str.strip().str.upper()
-        )
-    return suffixes
+def parse_street_name(name: object) -> tuple[str, str]:
+    """
+    Split a street name into (direction, core name).
 
-
-def normalize_street_name(
-    name: object,
-    suffixes: set[str] | None = None,
-) -> str:
-    """Normalize capitalization, punctuation, and a trailing street suffix."""
+    "W Selden ST" -> ("W", "SELDEN"); "Blue Hill AV" -> ("", "BLUE HILL").
+    The street type is dropped because the streets layer is matched on name and
+    direction only (its ST_TYPE is not reliable for parcel names).
+    """
     if name is None or pd.isna(name):
-        return ""
-
-    if suffixes is None:
-        suffixes = DEFAULT_STREET_SUFFIXES
+        return "", ""
     parts = str(name).strip().upper().replace(".", "").split()
-    if len(parts) > 1 and parts[-1] in suffixes:
-        parts = parts[:-1]
-    return " ".join(parts)
+    direction = ""
+    if len(parts) > 1 and parts[0] in DIRECTIONS:
+        direction = parts.pop(0)
+    if len(parts) > 1 and parts[-1] in STREET_TYPE_ALIASES:
+        parts.pop()
+    return direction, " ".join(parts)
+
+
+def street_match_key(name: object, pre_direction: object = None) -> str:
+    """
+    Key used to match a parcel's street to the streets layer. The streets layer
+    stores its direction in PRE_DIR, so that is combined with the name.
+    """
+    direction, core = parse_street_name(name)
+    if pre_direction is not None and not pd.isna(pre_direction):
+        direction = str(pre_direction).strip().upper()
+    return f"{direction} {core}".strip()
 
 def classify_parcel_edges(
     parcel_edges_gdf: gpd.GeoDataFrame,
@@ -88,9 +109,17 @@ def classify_parcel_edges(
     if parcel_edges_gdf.crs != streets_gdf.crs:
         streets_gdf = streets_gdf.to_crs(parcel_edges_gdf.crs)
 
-    suffixes = _street_suffixes(streets_gdf)
-    street_names = streets_gdf["ST_NAME"].map(
-        lambda value: normalize_street_name(value, suffixes)
+    pre_directions = (
+        streets_gdf["PRE_DIR"]
+        if "PRE_DIR" in streets_gdf.columns
+        else pd.Series(None, index=streets_gdf.index, dtype=object)
+    )
+    street_keys = pd.Series(
+        [
+            street_match_key(name, direction)
+            for name, direction in zip(streets_gdf["ST_NAME"], pre_directions)
+        ],
+        index=streets_gdf.index,
     )
     parcel_street_names = parcels_gdf.set_index("MAP_PAR_ID")["ST_NAME"].to_dict()
     results = []
@@ -135,11 +164,9 @@ def classify_parcel_edges(
         )
 
     for parcel_id, edges in parcel_edges_gdf.groupby("MAP_PAR_ID"):
-        normalized_name = normalize_street_name(
-            parcel_street_names.get(parcel_id), suffixes
-        )
+        parcel_key = street_match_key(parcel_street_names.get(parcel_id))
         matching_streets = streets_gdf.loc[
-            street_names.eq(normalized_name) & street_names.ne("")
+            street_keys.eq(parcel_key) & street_keys.ne("")
         ]
         street_lines = [
             line
