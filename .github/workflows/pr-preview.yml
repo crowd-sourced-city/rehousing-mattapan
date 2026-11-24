@@ -1,0 +1,53 @@
+# Every PR (and every push to it) is tested, built and published to
+#   https://<org>.github.io/<repo>/pr-preview/pr-<number>/
+# A bot comment on the PR links the preview. Closing or merging the PR removes it.
+# PRs from forks are tested but not published (GitHub gives fork PRs a read-only token).
+name: PR preview
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+
+concurrency:
+  group: pr-preview-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    if: github.event.action != 'closed'
+    uses: ./.github/workflows/test-and-build.yml
+
+  deploy-preview:
+    needs: test
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push to the gh-pages branch
+      pull-requests: write # post the preview link
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: site
+      - run: touch site/.nojekyll
+      - uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: site
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: deploy
+
+  remove-preview:
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rossjrw/pr-preview-action@v1
+        with:
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: remove
