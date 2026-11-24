@@ -1,11 +1,18 @@
 import { expect, type Page } from '@playwright/test';
 
-/** Fail the test on any app error. Street View's iframe logs its own noise; ignore that. */
+/**
+ * Collect app errors so a test can fail on them. Errors from the Google Street View
+ * iframe are third-party noise and are ignored: matched by message *and* by source URL,
+ * since resource errors ("Failed to load resource…") only name the URL in their location.
+ */
+const THIRD_PARTY = /google|gstatic|ggpht|accelerometer|Permissions policy/i;
 export function watchErrors(page: Page) {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {
-    if (m.type() === 'error' && !/accelerometer|google|gstatic|Permissions policy/i.test(m.text())) errors.push(m.text());
+    if (m.type() !== 'error') return;
+    if (THIRD_PARTY.test(m.text()) || THIRD_PARTY.test(m.location().url ?? '')) return;
+    errors.push(`${m.text()} @ ${m.location().url}`);
   });
   return errors;
 }

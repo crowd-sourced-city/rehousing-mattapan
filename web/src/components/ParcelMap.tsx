@@ -2,19 +2,10 @@ import maplibregl, { type GeoJSONSource, type Map as MLMap } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useEffect, useRef } from 'react';
 import { loadParcels } from '../data/session';
-import { mapCategory, type MapCategory } from '../rules/site';
+import { mapCategory } from '../rules/site';
+import { MAP_COLORS } from './mapColors';
 
 const base = import.meta.env.BASE_URL;
-
-/** Map colours, shared with the legend on the Find page. */
-export const MAP_COLORS = {
-  covered: '#e6f0e1', // pale green: homes this tool can check
-  pending: '#fbefd5', // pale amber: homes the tool can't check yet
-  other: '#dedad3', // warm grey: other zoning or not a 1–3 family home
-  building: '#b9b2b0',
-  accessory: '#d9d3d0',
-  selected: '#1f5fa8',
-} satisfies Record<MapCategory | 'building' | 'accessory' | 'selected', string>;
 
 type FC = GeoJSON.FeatureCollection;
 /**
@@ -35,6 +26,11 @@ function loadParcelShapes() {
   }
   return parcelsGeo;
 }
+/**
+ * Maps that have been removed (user left the page). Parcel shapes load asynchronously,
+ * so callbacks check this before touching a map that no longer exists.
+ */
+const removedMaps = new WeakSet<MLMap>();
 const EMPTY: FC = { type: 'FeatureCollection', features: [] };
 
 /**
@@ -93,6 +89,7 @@ export function ParcelMap({
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     m.on('load', () => {
       loadParcelShapes().then(({ fc }) => {
+        if (removedMaps.has(m)) return;
         (m.getSource('parcels') as GeoJSONSource | undefined)?.setData(fc);
         ready.current = true;
         highlight(m, selectedIdRef.current);
@@ -105,7 +102,11 @@ export function ParcelMap({
     m.on('mouseenter', 'parcels-fill', () => (m.getCanvas().style.cursor = 'pointer'));
     m.on('mouseleave', 'parcels-fill', () => (m.getCanvas().style.cursor = ''));
     map.current = m;
-    return () => m.remove();
+    return () => {
+      removedMaps.add(m);
+      map.current = null;
+      m.remove();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -127,6 +128,7 @@ function highlight(m: MLMap, id?: string) {
   if (!src) return;
   if (!id) return src.setData(EMPTY);
   loadParcelShapes().then(({ byId }) => {
+    if (removedMaps.has(m)) return;
     const geometry = byId.get(id);
     src.setData(geometry ? { type: 'FeatureCollection', features: [{ type: 'Feature', properties: {}, geometry }] } : EMPTY);
   });

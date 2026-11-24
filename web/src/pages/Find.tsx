@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { MAP_COLORS, ParcelMap } from '../components/ParcelMap';
+import { MAP_COLORS } from '../components/mapColors';
 import { Banner } from '../components/ui';
 import { useParcels, useSession } from '../data/session';
 import { coverageCap, LOT_SIZE_LABEL, lotSize, unsupportedReason } from '../rules/site';
 import type { Parcel } from '../rules/types';
+
+// The map library is ~1 MB, so it is only downloaded when this page needs it.
+const ParcelMap = lazy(() => import('../components/ParcelMap').then((m) => ({ default: m.ParcelMap })));
 
 const fmt = (n: number | null | undefined) => (n == null ? '—' : Math.round(n).toLocaleString('en-US'));
 
@@ -180,7 +183,9 @@ export default function Find() {
         )}
       </aside>
       <div className="map">
-        <ParcelMap selectedId={selectedId ?? undefined} onSelect={choose} center={selected ? [selected.lon, selected.lat] : undefined} />
+        <Suspense fallback={<div className="map-loading">Loading map…</div>}>
+          <ParcelMap selectedId={selectedId ?? undefined} onSelect={choose} center={selected ? [selected.lon, selected.lat] : undefined} />
+        </Suspense>
         <div className="legend" aria-label="Map legend">
           {selected && <div className="legend-title">{selected.address}</div>}
           <ul>

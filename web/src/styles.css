@@ -272,3 +272,16 @@ details.exp .exp-body > * + * { margin-top: 10px; }
 .legend ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .legend li { display: flex; align-items: flex-start; gap: 8px; }
 .legend .sw { flex: none; display: inline-block; width: 12px; height: 12px; margin-top: 1px; border: 1px solid #8f8e88; border-radius: 2px; }
+
+/* ---- Loading states & error screen --------------------------------------- */
+/* Static placeholder in index.html until the app starts (never a blank page). */
+.boot-loading, .page-loading { padding: 64px 24px; text-align: center; color: var(--ink-soft); font-family: var(--ui, system-ui, sans-serif); font-size: 15px; }
+.page-loading { min-height: 50vh; }
+.map-loading { position: absolute; inset: 0; display: grid; place-items: center; background: #f7f7f5; color: var(--ink-soft); font-size: 15px; }
+.error-screen { max-width: 680px; margin: 0 auto; padding: 64px 16px 80px; font-family: var(--ui, system-ui, sans-serif); color: var(--ink); }
+.error-screen h1 { font-family: var(--heading); font-size: 28px; margin: 0 0 12px; }
+.error-screen p { color: var(--ink-muted); line-height: 1.5; margin: 0 0 24px; }
+.error-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 32px; }
+.dev-info { border-top: 1px solid var(--line); }
+.dev-info pre { white-space: pre-wrap; word-break: break-word; font-size: 12px; line-height: 1.5; background: var(--tile); border-radius: 8px; padding: 12px 14px; margin: 0 0 12px; max-height: 50vh; overflow: auto; }
+.dev-info .btn { margin-bottom: 16px; }

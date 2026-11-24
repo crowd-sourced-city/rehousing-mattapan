@@ -80,8 +80,9 @@ flowchart LR
 |---|---|
 | `scripts/build_data.py` | Joins the team's GeoPackages and works out extra fields per parcel, including: both side yards (left/right as seen from the street); garage detection and position; buildable areas for attached and detached ADUs; the spot where a backyard ADU fits. Writes `public/data/`. Drops owner names and mailing addresses. |
 | `src/rules/` | **The rules engine.** Pure functions, no React, so it's easy to test. `site.ts` covers scope, the Article 60 site check, lot-size groups and map colours. `options.ts` defines the 11 designs (questions, early status, full evaluation). `fire.ts` handles fire access and sprinklers; `finance.ts` handles loan eligibility. `constants.ts` holds every number, with its source. |
-| `src/pages/` | One file per screen; routes live in `main.tsx`. Hash routing (`#/options`), so links work on GitHub Pages without server config. |
-| `src/components/` | `ParcelMap`: MapLibre drawing only our own GeoJSON, with no basemap tiles or API keys. `SitePlan`: an SVG diagram scaled to the lot. `ui`: badges, questions, dropdowns, overlays. |
+| `src/pages/` | One file per screen; routes live in `main.tsx`. Hash routing (`#/options`), so links work on GitHub Pages without server config. Each page's code downloads only when it's opened. The landing page ships with the app, and the ~1 MB map library is fetched only by the Find page. |
+| `src/components/` | `ParcelMap`: MapLibre drawing only our own GeoJSON, with no basemap tiles or API keys. `SitePlan`: an SVG diagram scaled to the lot. `ui`: badges, questions, dropdowns, overlays. `ErrorScreen`: shown instead of a blank page if anything fails, with a **Developer Info** dropdown (error, stack, page, build, browser) and a copy button. |
+| `src/boot.js` | Inlined into each page's `<head>` at build time. Before the app starts, it catches files that fail to load or early crashes and shows the same error screen in plain HTML. Each page also has a static "Loading…" message until the app replaces it. |
 | `src/data/session.tsx` | Loads `parcels.json` once and keeps the selected parcel and answers in `sessionStorage` for the tab. Help-paying answers are never saved. |
 | `src/content/` | Plain-language "Understand the rules" explainers. |
 
@@ -127,7 +128,7 @@ The script reads from the shared project Drive's `Data/` folder and takes about 
 | Rules | `src/rules/rules.test.ts` | Hand-picked cases, including the spreadsheet's test parcels: lot-size groups, coverage limits, site check, fire access, key option outcomes, help-paying limits. |
 | Whole-dataset sweep | `src/rules/dataset.test.ts` | Every supported parcel × every design for its lot size × every answer (over 50,000 evaluations). Nothing crashes, every status is valid, and no text shows `NaN` or `undefined`. Also checks that map colours match what the tool does with each lot, and that the income tables are consistent. |
 | Site plans | `src/components/SitePlan.test.tsx` | Renders the diagrams for about 225 real lots. Checks no broken coordinates, shapes stay on the drawing, the house follows the measured side yards, and the garage is drawn. |
-| Browser smoke | `e2e/*.spec.ts` | In a real Chromium against the production build: the full find → details → options → questions → result flow, "how we reached this result", the not-possible and irregular-lot screens, the static pages, dropdowns, and no horizontal scrolling at phone width. Any app error fails the test. |
+| Browser smoke | `e2e/*.spec.ts` | In a real Chromium against the production build: the full find → details → options → questions → result flow, "how we reached this result", the not-possible and irregular-lot screens, the static pages, dropdowns, and no horizontal scrolling at phone width. Pages without a map never download the map library; a slow download shows "Loading…"; a failed download shows the error screen with developer info. Any app error fails the test. |
 
 ## CI/CD
 
