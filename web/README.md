@@ -106,6 +106,7 @@ Other scripts:
 | `npm run build` | Production build into `dist/`. Uses relative paths, so it works from any sub-folder. |
 | `npm run test:e2e` | Browser smoke tests (Playwright) against the build. Run `npm run build` first. First time only: `npx playwright install chromium`. |
 | `npm run test:all` | Unit tests, build, then browser tests |
+| `BASE_URL=<url> npm run test:e2e` | Browser tests against a deployed site, such as a PR preview |
 
 ### Rebuilding the data
 
