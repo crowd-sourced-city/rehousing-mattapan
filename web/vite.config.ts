@@ -4,9 +4,10 @@ import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-// Build stamp for the error screen's Developer Info (CI sets GITHUB_SHA).
+// Build stamp for the error screen's Developer Info (CI passes the commit as BUILD_SHA).
 function commit() {
-  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 7);
+  const sha = process.env.BUILD_SHA || process.env.GITHUB_SHA;
+  if (sha) return sha.slice(0, 7);
   try {
     return execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim() + ' (local)';
   } catch {
