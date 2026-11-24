@@ -1,0 +1,36 @@
+# Every push to main is tested, built and published to the site root:
+#   https://<org>.github.io/<repo>/
+# Open PR previews under pr-preview/ are left untouched.
+name: Deploy main
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+jobs:
+  test:
+    uses: ./.github/workflows/test-and-build.yml
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push to the gh-pages branch
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: site
+          path: site
+      - run: touch site/.nojekyll
+      - uses: JamesIves/github-pages-deploy-action@v4.9.0
+        with:
+          folder: site
+          branch: gh-pages
+          clean-exclude: pr-preview/
+          force: false
