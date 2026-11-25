@@ -1,0 +1,572 @@
+{
+  "generated": "2026-11-24",
+  "funnel": {
+    "parcels": 3910,
+    "inR1R2Homes": 2896,
+    "assessable": 2254,
+    "passSiteCheck": 1586,
+    "yes": 1436,
+    "maybe": 145,
+    "no": 673
+  },
+  "typesHist": [
+    673,
+    178,
+    760,
+    137,
+    506
+  ],
+  "sizeBuckets": {
+    "under500": 6,
+    "to750": 120,
+    "to1000": 458,
+    "over1000": 997
+  },
+  "factor": {
+    "allowed": 1436,
+    "existing": 387,
+    "setbacks": 217,
+    "space": 26,
+    "several": 166,
+    "coverage": 16,
+    "units": 6
+  },
+  "familyGroups": {
+    "internal": {
+      "allowed": 1495,
+      "existing": 634,
+      "space": 112,
+      "units": 6,
+      "several": 7
+    },
+    "rear": {
+      "allowed": 1311,
+      "existing": 303,
+      "space": 100,
+      "setbacks": 342,
+      "several": 177,
+      "coverage": 15,
+      "units": 6
+    },
+    "side": {
+      "allowed": 735,
+      "setbacks": 378,
+      "several": 196,
+      "space": 672,
+      "existing": 260,
+      "coverage": 8,
+      "units": 5
+    },
+    "detached": {
+      "allowed": 592,
+      "fire": 381,
+      "several": 710,
+      "space": 344,
+      "existing": 113,
+      "setbacks": 108,
+      "coverage": 1,
+      "units": 5
+    }
+  },
+  "familyTags": {
+    "internal": {
+      "existing-side": 473,
+      "existing-rear": 227,
+      "existing-coverage": 25,
+      "existing-front": 70,
+      "space": 112,
+      "height": 2,
+      "units": 13
+    },
+    "rear": {
+      "existing-side": 473,
+      "space": 100,
+      "rear-setback": 499,
+      "existing-coverage": 25,
+      "coverage": 58,
+      "existing-front": 70,
+      "height": 2,
+      "units": 13
+    },
+    "side": {
+      "side-setback": 557,
+      "existing-side": 473,
+      "space": 672,
+      "existing-rear": 227,
+      "existing-coverage": 25,
+      "existing-front": 70,
+      "coverage": 63,
+      "height": 2,
+      "units": 13
+    },
+    "detached": {
+      "fire-path": 1041,
+      "existing-side": 473,
+      "space": 344,
+      "existing-rear": 227,
+      "detached-setbacks": 663,
+      "existing-coverage": 25,
+      "existing-front": 70,
+      "coverage": 52,
+      "height": 2,
+      "units": 13
+    }
+  },
+  "sprinklers": {
+    "internalAllowed": 1495,
+    "internalNeedsSprinklers": 712,
+    "cottageAllowed": 592,
+    "cottageNeedsSprinklers": 477
+  },
+  "reforms": [
+    "grandfather",
+    "rear10",
+    "cottage3",
+    "firePath",
+    "coverage"
+  ],
+  "reformImpact": [
+    {
+      "reform": "grandfather",
+      "yes": 433,
+      "anyAdu": 650
+    },
+    {
+      "reform": "rear10",
+      "yes": 130,
+      "anyAdu": 5
+    },
+    {
+      "reform": "cottage3",
+      "yes": 0,
+      "anyAdu": 0
+    },
+    {
+      "reform": "firePath",
+      "yes": 2,
+      "anyAdu": 0
+    },
+    {
+      "reform": "coverage",
+      "yes": 18,
+      "anyAdu": 0
+    }
+  ],
+  "allReforms": {
+    "gainYes": 683,
+    "gainAnyAdu": 655,
+    "counts": {
+      "yes": 2119,
+      "maybe": 117,
+      "no": 18
+    }
+  },
+  "withGrandfather": [
+    {
+      "reform": "grandfather",
+      "yes": 433,
+      "counts": {
+        "yes": 1869,
+        "maybe": 362,
+        "no": 23
+      }
+    },
+    {
+      "reform": "rear10",
+      "yes": 629,
+      "counts": {
+        "yes": 2065,
+        "maybe": 171,
+        "no": 18
+      }
+    },
+    {
+      "reform": "cottage3",
+      "yes": 433,
+      "counts": {
+        "yes": 1869,
+        "maybe": 362,
+        "no": 23
+      }
+    },
+    {
+      "reform": "firePath",
+      "yes": 439,
+      "counts": {
+        "yes": 1875,
+        "maybe": 356,
+        "no": 23
+      }
+    },
+    {
+      "reform": "coverage",
+      "yes": 475,
+      "counts": {
+        "yes": 1911,
+        "maybe": 320,
+        "no": 23
+      }
+    }
+  ],
+  "scenarioCounts": [
+    {
+      "yes": 1436,
+      "maybe": 145,
+      "no": 673
+    },
+    {
+      "yes": 1869,
+      "maybe": 362,
+      "no": 23
+    },
+    {
+      "yes": 1566,
+      "maybe": 20,
+      "no": 668
+    },
+    {
+      "yes": 2065,
+      "maybe": 171,
+      "no": 18
+    },
+    {
+      "yes": 1436,
+      "maybe": 145,
+      "no": 673
+    },
+    {
+      "yes": 1869,
+      "maybe": 362,
+      "no": 23
+    },
+    {
+      "yes": 1566,
+      "maybe": 20,
+      "no": 668
+    },
+    {
+      "yes": 2065,
+      "maybe": 171,
+      "no": 18
+    },
+    {
+      "yes": 1438,
+      "maybe": 143,
+      "no": 673
+    },
+    {
+      "yes": 1875,
+      "maybe": 356,
+      "no": 23
+    },
+    {
+      "yes": 1566,
+      "maybe": 20,
+      "no": 668
+    },
+    {
+      "yes": 2065,
+      "maybe": 171,
+      "no": 18
+    },
+    {
+      "yes": 1528,
+      "maybe": 56,
+      "no": 670
+    },
+    {
+      "yes": 2002,
+      "maybe": 232,
+      "no": 20
+    },
+    {
+      "yes": 1566,
+      "maybe": 20,
+      "no": 668
+    },
+    {
+      "yes": 2065,
+      "maybe": 171,
+      "no": 18
+    },
+    {
+      "yes": 1454,
+      "maybe": 127,
+      "no": 673
+    },
+    {
+      "yes": 1911,
+      "maybe": 320,
+      "no": 23
+    },
+    {
+      "yes": 1586,
+      "maybe": 0,
+      "no": 668
+    },
+    {
+      "yes": 2119,
+      "maybe": 117,
+      "no": 18
+    },
+    {
+      "yes": 1454,
+      "maybe": 127,
+      "no": 673
+    },
+    {
+      "yes": 1911,
+      "maybe": 320,
+      "no": 23
+    },
+    {
+      "yes": 1586,
+      "maybe": 0,
+      "no": 668
+    },
+    {
+      "yes": 2119,
+      "maybe": 117,
+      "no": 18
+    },
+    {
+      "yes": 1456,
+      "maybe": 125,
+      "no": 673
+    },
+    {
+      "yes": 1917,
+      "maybe": 314,
+      "no": 23
+    },
+    {
+      "yes": 1586,
+      "maybe": 0,
+      "no": 668
+    },
+    {
+      "yes": 2119,
+      "maybe": 117,
+      "no": 18
+    },
+    {
+      "yes": 1550,
+      "maybe": 34,
+      "no": 670
+    },
+    {
+      "yes": 2054,
+      "maybe": 180,
+      "no": 20
+    },
+    {
+      "yes": 1586,
+      "maybe": 0,
+      "no": 668
+    },
+    {
+      "yes": 2119,
+      "maybe": 117,
+      "no": 18
+    }
+  ],
+  "familyScenario": [
+    {
+      "internal": 1495,
+      "rear": 1311,
+      "side": 735,
+      "detached": 592
+    },
+    {
+      "internal": 2129,
+      "rear": 1614,
+      "side": 995,
+      "detached": 705
+    },
+    {
+      "internal": 1495,
+      "rear": 1566,
+      "side": 735,
+      "detached": 592
+    },
+    {
+      "internal": 2129,
+      "rear": 1968,
+      "side": 995,
+      "detached": 705
+    },
+    {
+      "internal": 1495,
+      "rear": 1311,
+      "side": 735,
+      "detached": 700
+    },
+    {
+      "internal": 2129,
+      "rear": 1614,
+      "side": 995,
+      "detached": 852
+    },
+    {
+      "internal": 1495,
+      "rear": 1566,
+      "side": 735,
+      "detached": 700
+    },
+    {
+      "internal": 2129,
+      "rear": 1968,
+      "side": 995,
+      "detached": 852
+    },
+    {
+      "internal": 1495,
+      "rear": 1311,
+      "side": 735,
+      "detached": 973
+    },
+    {
+      "internal": 2129,
+      "rear": 1614,
+      "side": 995,
+      "detached": 1224
+    },
+    {
+      "internal": 1495,
+      "rear": 1566,
+      "side": 735,
+      "detached": 973
+    },
+    {
+      "internal": 2129,
+      "rear": 1968,
+      "side": 995,
+      "detached": 1224
+    },
+    {
+      "internal": 1495,
+      "rear": 1311,
+      "side": 735,
+      "detached": 1485
+    },
+    {
+      "internal": 2129,
+      "rear": 1614,
+      "side": 995,
+      "detached": 1845
+    },
+    {
+      "internal": 1495,
+      "rear": 1566,
+      "side": 735,
+      "detached": 1485
+    },
+    {
+      "internal": 2129,
+      "rear": 1968,
+      "side": 995,
+      "detached": 1845
+    },
+    {
+      "internal": 1495,
+      "rear": 1326,
+      "side": 743,
+      "detached": 593
+    },
+    {
+      "internal": 2129,
+      "rear": 1642,
+      "side": 1017,
+      "detached": 706
+    },
+    {
+      "internal": 1495,
+      "rear": 1586,
+      "side": 743,
+      "detached": 593
+    },
+    {
+      "internal": 2129,
+      "rear": 2014,
+      "side": 1017,
+      "detached": 706
+    },
+    {
+      "internal": 1495,
+      "rear": 1326,
+      "side": 743,
+      "detached": 706
+    },
+    {
+      "internal": 2129,
+      "rear": 1642,
+      "side": 1017,
+      "detached": 861
+    },
+    {
+      "internal": 1495,
+      "rear": 1586,
+      "side": 743,
+      "detached": 706
+    },
+    {
+      "internal": 2129,
+      "rear": 2014,
+      "side": 1017,
+      "detached": 861
+    },
+    {
+      "internal": 1495,
+      "rear": 1326,
+      "side": 743,
+      "detached": 979
+    },
+    {
+      "internal": 2129,
+      "rear": 1642,
+      "side": 1017,
+      "detached": 1235
+    },
+    {
+      "internal": 1495,
+      "rear": 1586,
+      "side": 743,
+      "detached": 979
+    },
+    {
+      "internal": 2129,
+      "rear": 2014,
+      "side": 1017,
+      "detached": 1235
+    },
+    {
+      "internal": 1495,
+      "rear": 1326,
+      "side": 743,
+      "detached": 1513
+    },
+    {
+      "internal": 2129,
+      "rear": 1642,
+      "side": 1017,
+      "detached": 1897
+    },
+    {
+      "internal": 1495,
+      "rear": 1586,
+      "side": 743,
+      "detached": 1513
+    },
+    {
+      "internal": 2129,
+      "rear": 2014,
+      "side": 1017,
+      "detached": 1897
+    }
+  ],
+  "baseline": {
+    "yes": 1436,
+    "maybe": 145,
+    "no": 673
+  }
+}
