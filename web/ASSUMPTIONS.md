@@ -210,3 +210,17 @@ parcel's measured values (`web/src/components/SitePlan.tsx`, inputs from `basePl
 ## Display
 
 - Results always carry a "preliminary, not a zoning determination" note.
+
+## Advocacy page analysis
+
+The advocacy page (`advocacy/`) reuses the thresholds above. It adds its own assumptions to separate "not enough
+space" from "blocked by rules":
+- a 3 ft clearance
+- a 10 ft minimum rear addition
+- a 7 ft minimum side addition
+- a 330 sq ft minimum unit
+- 900 sq ft of living area per home to split a house
+
+It also assesses every ADU type on every lot, regardless of lot width. All of these are documented in
+[advocacy/README.md](advocacy/README.md#assumptions-specific-to-this-analysis).
+

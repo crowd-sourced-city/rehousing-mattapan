@@ -62,6 +62,12 @@ test('a slow app download shows a loading message, not a blank page', async ({ p
   expect(errors).toEqual([]);
 });
 
+test('advocacy page falls back to the error screen if its code fails', async ({ page }) => {
+  await page.route(/\/assets\/advocacy-[^/]*\.js$/, (r) => r.abort());
+  await page.goto('advocacy/');
+  await expect(page.getByRole('heading', { name: 'Something went wrong' })).toBeVisible();
+});
+
 test('moving between pages works when scroll methods return a Promise (Chrome 157+)', async ({ page }) => {
   // Newer Chrome returns a Promise from window.scrollTo. Simulate that in any browser,
   // since the pinned test Chromium is older.

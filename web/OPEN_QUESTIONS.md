@@ -70,3 +70,19 @@ or more confident calls are in [ASSUMPTIONS.md](ASSUMPTIONS.md).
     guidance and Guidebook. It needs a review by the team for accuracy and tone.
 16. **Unknown values on the "not possible" screen.** It lists failing checks from map estimates. Should users be able
     to correct a measured value (e.g. side yard) and re-run, as Figma suggests for property facts?
+
+## Advocacy page
+
+17. **The "physical space" baseline decides what counts as a rule problem.** The thresholds (3 ft clearance, 10 ft
+    rear addition, 7 ft side addition, 900 sq ft per home to split) are judgement calls. Should the team or a designer
+    confirm them before the page is shared?
+18. **Which rule changes to feature.** The explore map offers five reforms:
+    - grandfathering existing setbacks
+    - a 10 ft rear yard for additions
+    - 3 ft cottage setbacks
+    - sprinklers instead of the 10 ft fire path
+    - exempting ADUs from lot coverage
+
+    Are these the right ones for the team's advocacy, and is any already proposed in Boston?
+19. **Linking.** The page is deliberately unlinked from the tool for now. Decide whether and where to link it.
+
