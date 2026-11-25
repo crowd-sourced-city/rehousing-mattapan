@@ -9,6 +9,13 @@ of the Boston ADU Guidebook designs might fit their lot.
 **Live site:** `https://crowd-sourced-city.github.io/rehousing-mattapan/` (from `main`). Each pull request also gets a
 preview link; see [CI/CD](#cicd).
 
+The `web/` folder holds **two separate pages** that share one Vite/React setup, styles, rules and data:
+
+| Page | Path | Code |
+|---|---|---|
+| **Boston ADU Explorer**: the homeowner tool | `/` | `src/` |
+| **Room to Grow**: an advocacy page mapping where ADUs are possible and which rules limit them. It isn't linked from the tool. | `/advocacy/` | `advocacy/` (see [advocacy/README.md](advocacy/README.md)) |
+
 ## What it does
 
 1. **Find your property.** Search an address or click a lot on the map. The map is coloured by whether the tool can
@@ -63,7 +70,7 @@ flowchart LR
   end
   script --> pj & geo
 
-  subgraph app["Browser app (React + Vite)"]
+  subgraph app["Homeowner tool (src/, React + Vite)"]
     direction TB
     pages["pages/<br/>Find · Details · Overview ·<br/>OptionLane · Paying · Rules · …"]
     comps["components/<br/>ParcelMap (MapLibre) ·<br/>SitePlan (SVG) · ui"]
@@ -75,6 +82,17 @@ flowchart LR
   end
   pj --> session
   geo --> comps
+
+  subgraph adv["Advocacy page (advocacy/)"]
+    direction TB
+    analyze["scripts/analyze.ts<br/>limiting-factor analysis<br/>(run once, Node)"]
+    advjson["public/data/advocacy/<br/>lots.json · summary.json"]
+    advpage["src/<br/>maps · explore map · charts"]
+    analyze --> advjson --> advpage
+  end
+  pj --> analyze
+  rules -. "same thresholds" .-> analyze
+  geo --> advpage
 ```
 
 | Layer | What's in it |
@@ -87,6 +105,7 @@ flowchart LR
 | `src/telemetry.ts` | Usability telemetry: pages call `track()`. Off unless a PostHog key is set at build time; no cookies, no addresses, replays only via study links. See [TELEMETRY.md](TELEMETRY.md). |
 | `src/data/session.tsx` | Loads `parcels.json` once and keeps the selected parcel and answers in `sessionStorage` for the tab. Help-paying answers are never saved. |
 | `src/content/` | Plain-language "Understand the rules" explainers. |
+| `advocacy/` | The advocacy page: its own HTML entry (a second Vite input), React code in `advocacy/src/`, and the analysis in `advocacy/scripts/`. The analysis reuses `src/rules/`, runs ahead of time, and writes `public/data/advocacy/`. |
 
 **Changing a rule:** edit the number in `src/rules/constants.ts`, or the logic in `src/rules/options.ts`. Then run
 `npm test` and add an entry to `ASSUMPTIONS.md` if the change affects results.
@@ -98,7 +117,7 @@ Requires Node 20+.
 ```bash
 cd web
 npm install
-npm run dev          # http://localhost:5173
+npm run dev          # tool: http://localhost:5173/  ·  advocacy page: http://localhost:5173/advocacy/
 ```
 
 Other scripts:
@@ -110,6 +129,7 @@ Other scripts:
 | `npm run test:e2e` | Browser smoke tests (Playwright) against the build. Run `npm run build` first. First time only: `npx playwright install chromium`. |
 | `npm run test:all` | Unit tests, build, then browser tests |
 | `BASE_URL=<url> npm run test:e2e` | Browser tests against a deployed site, such as a PR preview |
+| `npm run advocacy:data` | Re-run the advocacy analysis into `public/data/advocacy/`. Needed after the parcel data or rules change. |
 
 ### Rebuilding the data
 
@@ -121,7 +141,8 @@ python -m venv .venv-web && .venv-web/bin/pip install geopandas shapely pyproj
 ```
 
 The script reads from the shared project Drive's `Data/` folder and takes about 15 s. Commit the updated
-`web/public/data/` files, and re-run `npm test`, since the dataset tests run against the real data.
+`web/public/data/` files, and re-run `npm test`, since the dataset tests run against the real data. Then re-run
+`npm run advocacy:data` so the advocacy page matches.
 
 ## Tests
 
@@ -130,7 +151,8 @@ The script reads from the shared project Drive's `Data/` folder and takes about 
 | Rules | `src/rules/rules.test.ts` | Hand-picked cases, including the spreadsheet's test parcels: lot-size groups, coverage limits, site check, fire access, key option outcomes, help-paying limits. |
 | Whole-dataset sweep | `src/rules/dataset.test.ts` | Every supported parcel × every design for its lot size × every answer (over 50,000 evaluations). Nothing crashes, every status is valid, and no text shows `NaN` or `undefined`. Also checks that map colours match what the tool does with each lot, and that the income tables are consistent. |
 | Site plans | `src/components/SitePlan.test.tsx` | Renders the diagrams for about 225 real lots. Checks no broken coordinates, shapes stay on the drawing, the house follows the measured side yards, and the garage is drawn. |
-| Browser smoke | `e2e/*.spec.ts` | In a real Chromium against the production build: the full find → details → options → questions → result flow, "how we reached this result", the not-possible and irregular-lot screens, the static pages, dropdowns, and no horizontal scrolling at phone width. Pages without a map never download the map library; a slow download shows "Loading…"; a failed download shows the error screen with developer info. **Telemetry:** the flow sends the expected events, and no event contains an address, lot ID or typed text; every address on screen is masked in replays. Any app error fails the test. |
+| Advocacy analysis | `advocacy/scripts/analysis.test.ts` | The analysis's site check matches the tool's on every parcel; no rule change ever makes a lot worse; lack of space always outranks rules; the 5 ft vs 8 ft side-yard example. |
+| Browser smoke | `e2e/*.spec.ts` | In a real Chromium against the production build. **Tool:** the full find → details → options → questions → result flow, "how we reached this result", the not-possible and irregular-lot screens, the static pages, dropdowns. **Advocacy page:** all maps render, rule toggles update the counts, lot details open, charts render. **Both:** no horizontal scrolling at phone width; pages without a map never download the map library; a slow download shows "Loading…"; a failed download shows the error screen with developer info. **Telemetry:** the flow sends the expected events, and no event contains an address, lot ID or typed text; every address on screen is masked in replays. Any app error fails the test. |
 
 ## CI/CD
 

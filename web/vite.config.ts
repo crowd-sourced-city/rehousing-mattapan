@@ -33,5 +33,11 @@ export default defineConfig({
   base: './',
   plugins: [react(), bootScript()],
   define: { __BUILD_COMMIT__: JSON.stringify(BUILD_COMMIT), __BUILD_TIME__: JSON.stringify(BUILD_TIME) },
-  test: { environment: 'node', include: ['src/**/*.test.{ts,tsx}'] },
+  build: {
+    rollupOptions: {
+      // Two separate pages sharing one build: the homeowner tool and the advocacy page.
+      input: { tool: resolve(__dirname, 'index.html'), advocacy: resolve(__dirname, 'advocacy/index.html') },
+    },
+  },
+  test: { environment: 'node', include: ['src/**/*.test.{ts,tsx}', 'advocacy/**/*.test.{ts,tsx}'] },
 });
