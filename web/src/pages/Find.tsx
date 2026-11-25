@@ -3,8 +3,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MAP_COLORS } from '../components/mapColors';
 import { Banner } from '../components/ui';
 import { useParcels, useSession } from '../data/session';
-import { coverageCap, LOT_SIZE_LABEL, lotSize, unsupportedReason } from '../rules/site';
+import { coverageCap, LOT_SIZE_LABEL, lotSize, mapCategory, unsupportedReason } from '../rules/site';
 import type { Parcel } from '../rules/types';
+import { PRIVATE, track } from '../telemetry';
 
 // The map library is ~1 MB, so it is only downloaded when this page needs it.
 const ParcelMap = lazy(() => import('../components/ParcelMap').then((m) => ({ default: m.ParcelMap })));
@@ -58,13 +59,24 @@ export default function Find() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected?.id]);
 
-  const choose = (id: string) => {
+  const choose = (id: string, via: 'search' | 'map') => {
     setParams({ p: id }, { replace: true });
     session.setParcel(id);
     const p = parcels?.[id];
+    // Coarse traits only: never the address or lot ID.
+    if (p) track('lot_selected', { via, lot_size: lotSize(p), zoning: p.zoning, category: mapCategory(p), supported: !unsupportedReason(p) });
     if (p) setQ(p.address ?? '');
     setOpen(false);
   };
+
+  // A search that finds nothing is a sign someone is stuck. Sent once the typing pauses;
+  // only the length of what was typed leaves the browser, never the text.
+  const noResults = open && q.length >= 3 && results.length === 0 && !!parcels;
+  useEffect(() => {
+    if (!noResults) return;
+    const t = setTimeout(() => track('search_no_results', { query_length: q.length }), 1200);
+    return () => clearTimeout(t);
+  }, [noResults, q]);
 
   const unsupported = selected ? unsupportedReason(selected) : null;
   const size = selected ? lotSize(selected) : null;
@@ -106,7 +118,7 @@ export default function Find() {
             onKeyDown={(e) => {
               if (e.key === 'ArrowDown') setActive((a) => Math.min(a + 1, results.length - 1));
               if (e.key === 'ArrowUp') setActive((a) => Math.max(a - 1, 0));
-              if (e.key === 'Enter' && results[active]) choose(results[active].id);
+              if (e.key === 'Enter' && results[active]) choose(results[active].id, 'search');
               if (e.key === 'Escape') setOpen(false);
             }}
           />
@@ -114,8 +126,8 @@ export default function Find() {
             <ul className="suggest" id="addr-list" role="listbox">
               {results.map((r, i) => (
                 <li key={r.id}>
-                  <button role="option" aria-selected={i === active} onMouseDown={(e) => e.preventDefault()} onClick={() => choose(r.id)}>
-                    {r.address}, Mattapan {r.zip}
+                  <button role="option" aria-selected={i === active} onMouseDown={(e) => e.preventDefault()} onClick={() => choose(r.id, 'search')}>
+                    <span className={PRIVATE}>{r.address}</span>, Mattapan {r.zip}
                   </button>
                 </li>
               ))}
@@ -132,7 +144,9 @@ export default function Find() {
         {selected && (
           <div className="stack" style={{ ['--gap' as string]: '18px' }}>
             <div>
-              <h1 style={{ fontSize: 26 }}>{selected.address ?? 'Unaddressed parcel'}, Mattapan</h1>
+              <h1 style={{ fontSize: 26 }}>
+                <span className={PRIVATE}>{selected.address ?? 'Unaddressed parcel'}</span>, Mattapan
+              </h1>
               <p className="serif small muted">
                 Parcel {selected.id} · {selected.zoningDesc ?? 'Zoning unknown'}
               </p>
@@ -175,7 +189,11 @@ export default function Find() {
               <p className="small muted">Something wrong? You can make corrections on the next page.</p>
             )}
             <div>
-              <button className="btn primary" onClick={() => nav(unsupported ? '/unsupported' : '/details')}>
+              <button className="btn primary" onClick={() => {
+                  track('find_continued', { supported: !unsupported });
+                  nav(unsupported ? '/unsupported' : '/details');
+                }}
+              >
                 {unsupported ? 'Continue' : 'Enter property info'} →
               </button>
             </div>
@@ -184,10 +202,10 @@ export default function Find() {
       </aside>
       <div className="map">
         <Suspense fallback={<div className="map-loading">Loading map…</div>}>
-          <ParcelMap selectedId={selectedId ?? undefined} onSelect={choose} center={selected ? [selected.lon, selected.lat] : undefined} />
+          <ParcelMap selectedId={selectedId ?? undefined} onSelect={(id) => choose(id, 'map')} center={selected ? [selected.lon, selected.lat] : undefined} />
         </Suspense>
         <div className="legend" aria-label="Map legend">
-          {selected && <div className="legend-title">{selected.address}</div>}
+          {selected && <div className={`legend-title ${PRIVATE}`}>{selected.address}</div>}
           <ul>
             <li><span className="sw" style={{ background: 'rgba(31,95,168,.18)', borderColor: MAP_COLORS.selected, borderWidth: 2 }} />Your parcel</li>
             <li><span className="sw" style={{ background: MAP_COLORS.covered }} />Homes this tool can check</li>

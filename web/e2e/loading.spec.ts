@@ -61,3 +61,23 @@ test('a slow app download shows a loading message, not a blank page', async ({ p
   await expect(page.getByText('BOSTON ADU EXPLORER')).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('moving between pages works when scroll methods return a Promise (Chrome 157+)', async ({ page }) => {
+  // Newer Chrome returns a Promise from window.scrollTo. Simulate that in any browser,
+  // since the pinned test Chromium is older.
+  await page.addInitScript(() => {
+    const original = window.scrollTo.bind(window);
+    window.scrollTo = ((...args: Parameters<typeof window.scrollTo>) => {
+      original(...args);
+      return Promise.resolve();
+    }) as typeof window.scrollTo;
+  });
+  const errors = watchErrors(page);
+  await page.goto('#/rules');
+  for (const route of ['#/have-a-say', '#/paying', '#/find', '#/rules', '#/']) {
+    await page.evaluate((h) => (location.hash = h), route);
+    await expect(page.locator('h1').first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Something went wrong' })).toHaveCount(0);
+  }
+  expect(errors).toEqual([]);
+});

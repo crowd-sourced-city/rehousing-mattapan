@@ -1,4 +1,5 @@
-import { Component, useState, type ReactNode } from 'react';
+import { Component, useEffect, useState, type ReactNode } from 'react';
+import { track } from '../telemetry';
 
 /** Build stamp injected by vite.config.ts (commit + build time), shown in Developer Info. */
 export const BUILD = `${__BUILD_COMMIT__} · built ${__BUILD_TIME__}`;
@@ -27,6 +28,11 @@ function isLoadError(error: unknown) {
 
 export function ErrorScreen({ error, componentStack, homeHref }: { error: unknown; componentStack?: string; homeHref?: string }) {
   const info = developerInfo(error, componentStack);
+  useEffect(() => {
+    const e = error instanceof Error ? error : new Error(String(error));
+    track('error_shown', { message: e.message.slice(0, 300), load_error: isLoadError(error), stack: (e.stack ?? '').slice(0, 1500) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [copied, setCopied] = useState(false);
   const copy = () =>
     navigator.clipboard?.writeText(info).then(
