@@ -22,7 +22,12 @@ const Unsupported = lazy(() => import('./pages/Status').then((m) => ({ default: 
 
 function ScrollTop() {
   const { pathname } = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  // Braces matter: an effect may only return a cleanup function. Newer Chrome (~157+)
+  // makes window.scrollTo return a Promise, which React then tried to call as the
+  // cleanup on the next page change: "TypeError: n is not a function".
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
   return null;
 }
 
