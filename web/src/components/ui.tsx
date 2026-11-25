@@ -2,6 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import type { Metric, Reason, Status, TraceStep } from '../rules/types';
 import type { Question } from '../rules/options';
+import { telemetryConfigured, track } from '../telemetry';
 
 export const STATUS_LABEL: Record<Status, string> = {
   possible: 'Looks possible',
@@ -55,6 +56,12 @@ export function Footer() {
           </a>
           ·<Link to="/rules">Rules and sources</Link>·<Link to="/have-a-say">Have a say</Link>·<a href="mailto:ADU@boston.gov">ADU@boston.gov</a>
         </p>
+        {telemetryConfigured && (
+          <p className="small muted privacy-note">
+            To improve this prototype we record anonymous usage, such as which pages are visited and where people stop. No cookies,
+            and we never record your address or what you type.
+          </p>
+        )}
       </div>
     </footer>
   );
@@ -104,6 +111,15 @@ export function Tiles({ items }: { items: Metric[] }) {
       ))}
     </div>
   );
+}
+
+/** Sends one telemetry event when it first renders (and again if `id` changes). Renders nothing. */
+export function TrackView({ event, id, props }: { event: string; id: string; props?: Parameters<typeof track>[1] }) {
+  useEffect(() => {
+    track(event, props);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event, id]);
+  return null;
 }
 
 export function Expandable({ title, children, open }: { title: ReactNode; children: ReactNode; open?: boolean }) {

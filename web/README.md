@@ -40,6 +40,7 @@ Guidebook or the team's Miro decision tree. Where they disagree or leave a gap, 
 
 - **[ASSUMPTIONS.md](ASSUMPTIONS.md)**: decisions and assumptions behind the results (⚠️ = important to check).
 - **[OPEN_QUESTIONS.md](OPEN_QUESTIONS.md)**: bigger unresolved questions to revisit with the team.
+- **[TELEMETRY.md](TELEMETRY.md)**: optional usability telemetry (PostHog): what's recorded, privacy rules, study links for usability testing, and setup.
 
 ## Architecture
 
@@ -83,6 +84,7 @@ flowchart LR
 | `src/pages/` | One file per screen; routes live in `main.tsx`. Hash routing (`#/options`), so links work on GitHub Pages without server config. Each page's code downloads only when it's opened. The landing page ships with the app, and the ~1 MB map library is fetched only by the Find page. |
 | `src/components/` | `ParcelMap`: MapLibre drawing only our own GeoJSON, with no basemap tiles or API keys. `SitePlan`: an SVG diagram scaled to the lot. `ui`: badges, questions, dropdowns, overlays. `ErrorScreen`: shown instead of a blank page if anything fails, with a **Developer Info** dropdown (error, stack, page, build, browser) and a copy button. |
 | `src/boot.js` | Inlined into each page's `<head>` at build time. Before the app starts, it catches files that fail to load or early crashes and shows the same error screen in plain HTML. Each page also has a static "Loading…" message until the app replaces it. |
+| `src/telemetry.ts` | Usability telemetry: pages call `track()`. Off unless a PostHog key is set at build time; no cookies, no addresses, replays only via study links. See [TELEMETRY.md](TELEMETRY.md). |
 | `src/data/session.tsx` | Loads `parcels.json` once and keeps the selected parcel and answers in `sessionStorage` for the tab. Help-paying answers are never saved. |
 | `src/content/` | Plain-language "Understand the rules" explainers. |
 
@@ -128,7 +130,7 @@ The script reads from the shared project Drive's `Data/` folder and takes about 
 | Rules | `src/rules/rules.test.ts` | Hand-picked cases, including the spreadsheet's test parcels: lot-size groups, coverage limits, site check, fire access, key option outcomes, help-paying limits. |
 | Whole-dataset sweep | `src/rules/dataset.test.ts` | Every supported parcel × every design for its lot size × every answer (over 50,000 evaluations). Nothing crashes, every status is valid, and no text shows `NaN` or `undefined`. Also checks that map colours match what the tool does with each lot, and that the income tables are consistent. |
 | Site plans | `src/components/SitePlan.test.tsx` | Renders the diagrams for about 225 real lots. Checks no broken coordinates, shapes stay on the drawing, the house follows the measured side yards, and the garage is drawn. |
-| Browser smoke | `e2e/*.spec.ts` | In a real Chromium against the production build: the full find → details → options → questions → result flow, "how we reached this result", the not-possible and irregular-lot screens, the static pages, dropdowns, and no horizontal scrolling at phone width. Pages without a map never download the map library; a slow download shows "Loading…"; a failed download shows the error screen with developer info. Any app error fails the test. |
+| Browser smoke | `e2e/*.spec.ts` | In a real Chromium against the production build: the full find → details → options → questions → result flow, "how we reached this result", the not-possible and irregular-lot screens, the static pages, dropdowns, and no horizontal scrolling at phone width. Pages without a map never download the map library; a slow download shows "Loading…"; a failed download shows the error screen with developer info. **Telemetry:** the flow sends the expected events, and no event contains an address, lot ID or typed text; every address on screen is masked in replays. Any app error fails the test. |
 
 ## CI/CD
 

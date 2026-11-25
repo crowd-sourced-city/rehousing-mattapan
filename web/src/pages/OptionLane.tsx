@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { RULE_TOPICS, topicsFor } from '../content/rules';
 import { SitePlan } from '../components/SitePlan';
-import { Badge, Banner, Expandable, Overlay, Preliminary, ProcessBand, QuestionField, Reasons, Steps, Tiles, TraceList } from '../components/ui';
+import { Badge, Banner, Expandable, Overlay, Preliminary, ProcessBand, QuestionField, Reasons, Steps, Tiles, TraceList, TrackView } from '../components/ui';
 import { useSession } from '../data/session';
 import { OPTION_BY_ID, type OptionDef, type OptionId } from '../rules/options';
 import { siteCheck, unsupportedReason } from '../rules/site';
 import type { OptionAnswers, Parcel, PropertyAnswers } from '../rules/types';
 import { Crumbs, WithParcel } from './common';
 import { cardPlan } from './Overview';
+import { PRIVATE, track } from '../telemetry';
 
 export default function OptionLane() {
   return <WithParcel>{(p) => <Lane p={p} />}</WithParcel>;
@@ -147,7 +148,13 @@ function Questions({ o, p, answers }: { o: OptionDef; p: Parcel; answers: Option
           </ul>
         </div>
         <div className="row">
-          <button className="btn primary" onClick={() => nav(`/option/${o.id}/result`)}>
+          <button
+            className="btn primary"
+            onClick={() => {
+              track('option_questions_completed', { option: o.id });
+              nav(`/option/${o.id}/result`);
+            }}
+          >
             See my result →
           </button>
           <span className="small muted">You can change your answers at any time.</span>
@@ -176,6 +183,7 @@ function Result({ o, p, answers, property }: { o: OptionDef; p: Parcel; answers:
             <Steps current={3} />
             <div className="eyebrow">Your result · {o.type}</div>
             <h1 className="caps">{o.name}</h1>
+            <TrackView event="option_result" id={o.id + r.status} props={{ option: o.id, status: r.status }} />
             <div>
               <Badge status={r.status} large />
             </div>
@@ -217,7 +225,13 @@ function Result({ o, p, answers, property }: { o: OptionDef; p: Parcel; answers:
           <section className="stack" style={{ ['--gap' as string]: '6px' }}>
             <h2>Why did I get this result?</h2>
             <Reasons items={r.reasons} />
-            <button className="btn small" onClick={() => setTrace(true)}>
+            <button
+              className="btn small"
+              onClick={() => {
+                track('result_explained', { option: o.id, status: r.status });
+                setTrace(true);
+              }}
+            >
               How we reached this result
             </button>
           </section>
@@ -309,7 +323,13 @@ function Summary({ o, p, answers, property }: { o: OptionDef; p: Parcel; answers
         <h1>Prepare for a professional consultation</h1>
         <p className="lead">Bring this to a first conversation with an architect, designer or the City. It records what you explored — it is not an application.</p>
         <div className="row no-print">
-          <button className="btn primary" onClick={() => window.print()}>
+          <button
+            className="btn primary"
+            onClick={() => {
+              track('summary_printed', { option: o.id, status: r.status });
+              window.print();
+            }}
+          >
             Print or save as PDF
           </button>
         </div>
@@ -317,7 +337,10 @@ function Summary({ o, p, answers, property }: { o: OptionDef; p: Parcel; answers
           <div>
             <div className="eyebrow">Property</div>
             <p>
-              <strong>{p.address}, Mattapan {p.zip}</strong> · Parcel {p.id}
+              <strong>
+                <span className={PRIVATE}>{p.address}</span>, Mattapan {p.zip}
+              </strong>{' '}
+              · Parcel <span className={PRIVATE}>{p.id}</span>
             </p>
             <p className="serif small">{p.zoningDesc}</p>
           </div>

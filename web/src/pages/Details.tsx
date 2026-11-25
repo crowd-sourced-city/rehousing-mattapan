@@ -4,6 +4,7 @@ import { useSession } from '../data/session';
 import type { Question } from '../rules/options';
 import type { Parcel, PropertyAnswers } from '../rules/types';
 import { Crumbs, WithParcel } from './common';
+import { PRIVATE, track } from '../telemetry';
 
 const YN = [
   { value: 'yes', label: 'Yes' },
@@ -108,7 +109,9 @@ function DetailsInner({ p }: { p: Parcel }) {
           <span>3 ADU options</span>
         </div>
         <div className="stack" style={{ ['--gap' as string]: '8px' }}>
-          <h1>Tell us about {p.address}</h1>
+          <h1>
+            Tell us about <span className={PRIVATE}>{p.address}</span>
+          </h1>
           <p className="lead">Help us understand what’s possible on your lot. Rough answers are fine — “I’m not sure” is always OK.</p>
           <p className="small muted" aria-live="polite">
             {answered} of {all.length} answered · you can skip anything and come back later
@@ -141,7 +144,13 @@ function DetailsInner({ p }: { p: Parcel }) {
           </section>
         ))}
         <div className="row">
-          <button className="btn primary" onClick={() => nav('/options')}>
+          <button
+            className="btn primary"
+            onClick={() => {
+              track('details_completed', { answered, questions: all.length });
+              nav('/options');
+            }}
+          >
             See your ADU options →
           </button>
           <span className="small muted">You can change your answers at any time.</span>

@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { SitePlan } from '../components/SitePlan';
-import { Badge, Banner, ProcessBand, TraceList } from '../components/ui';
+import { Badge, Banner, ProcessBand, TraceList, TrackView } from '../components/ui';
 import { useSession } from '../data/session';
 import { basePlan, bedroomMatch, optionsForLot, type OptionDef } from '../rules/options';
 import { LOT_SIZE_LABEL, lotSize, siteCheck, unsupportedReason } from '../rules/site';
 import type { Parcel, PlanSpec } from '../rules/types';
 import { Crumbs, WithParcel } from './common';
+import { PRIVATE, track } from '../telemetry';
 
 export function cardPlan(o: OptionDef, p: Parcel): PlanSpec {
   const base: PlanSpec = basePlan(p, 'rear');
@@ -60,7 +61,9 @@ function OverviewInner({ p }: { p: Parcel }) {
           <h1>What could you build on your property?</h1>
           <p className="lead">Explore {opts.length} ways you might add a separate home to your property.</p>
           <p className="row small" style={{ gap: 14 }}>
-            <strong>{p.address}, Mattapan</strong>
+            <strong>
+              <span className={PRIVATE}>{p.address}</span>, Mattapan
+            </strong>
             <span className="muted">
               {LOT_SIZE_LABEL[size]} · {Math.round(p.lotWidth ?? 0)} ft wide · {Math.round(p.lotArea ?? 0).toLocaleString()} sq ft · {p.zoning}
             </span>
@@ -126,11 +129,20 @@ function OverviewInner({ p }: { p: Parcel }) {
             </section>
           );
         })}
+        <TrackView
+          event="options_viewed"
+          id={opts.map((x) => x.o.id + x.pre.status).join()}
+          props={{ lot_size: size, available: available.length, unavailable: unavailable.length, possible: available.filter((x) => x.pre.status === 'possible').length }}
+        />
         {!available.length && <p className="serif">None of the options look possible from city data alone. Open the list below to see why.</p>}
 
         {unavailable.length > 0 && (
           <section className="stack" style={{ ['--gap' as string]: '14px' }}>
-            <button className="unavail-toggle" aria-expanded={showUnavail} aria-controls="unavail" onClick={() => setShowUnavail((v) => !v)}>
+            <button className="unavail-toggle" aria-expanded={showUnavail} aria-controls="unavail" onClick={() => {
+                track('unavailable_options_toggled', { open: !showUnavail, count: unavailable.length });
+                setShowUnavail((v) => !v);
+              }}
+            >
               {showUnavail ? 'Hide' : 'Show'} {unavailable.length} option{unavailable.length === 1 ? '' : 's'} not available here
               <span className="caret" aria-hidden />
             </button>

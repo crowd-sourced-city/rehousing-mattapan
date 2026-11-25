@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useParcels, useSession } from '../data/session';
 import type { Parcel } from '../rules/types';
+import { PRIVATE } from '../telemetry';
 
 /** Renders children with the selected parcel, or redirects to /find. */
 export function WithParcel({ children }: { children: (p: Parcel) => ReactNode }) {
@@ -24,7 +25,7 @@ export function Crumbs({ back, backTo, title, parcel }: { back: string; backTo: 
         </Link>
         {title && <span className="muted">/ {title}</span>}
         <span className="addr">
-          {parcel.address}, Mattapan
+          <span className={PRIVATE}>{parcel.address}</span>, Mattapan
         </span>
       </div>
     </div>
